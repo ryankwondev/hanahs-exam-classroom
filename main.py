@@ -1,11 +1,10 @@
+import psycopg2
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-import psycopg2
-import json
 
 app = FastAPI()
 
-database = psycopg2.connect(host='postgres',
+database = psycopg2.connect(host='localhost',
                             dbname='postgres',
                             user='postgres',
                             password='p5ssw0rd',
@@ -14,8 +13,41 @@ database = psycopg2.connect(host='postgres',
 cursor = database.cursor()
 
 
+@app.get("/")
+async def root():
+    return HTMLResponse(
+        """
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Exam Classroom</title>
+        </head>
+        <body>
+        
+        <script>
+            function doSomething() {
+                // alert(document.forms[0].elements['name'].value);
+                var url = document.forms[0].elements['name'].value;
+                window.location = url;
+                return false;
+            }
+        </script>
+        
+        <form onsubmit="return doSomething();" class="my-form">
+            <input type="text" name="name">
+            <input type="submit" value="조회하기">
+        </form>
+        
+        
+        </body>
+        </html>
+        """
+    )
+
+
 @app.get("/{code}")
-async def root(code: str):
+async def ret(code: str):
     try:
         cursor.execute(
             f"SELECT * FROM examroom WHERE code = '{code}';"
@@ -35,3 +67,9 @@ async def root(code: str):
 
     except Exception as e:
         return {"error": str(e)}
+
+
+if __name__ == '__main__':
+    import uvicorn
+
+    uvicorn.run(app, host='0.0.0.0', port=8000)
